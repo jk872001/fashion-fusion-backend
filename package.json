@@ -1,0 +1,25 @@
+{
+  "name": "fashion-fusion-backend",
+  "version": "1.0.0",
+  "description": "An ecommerce platform that allows multiple shopkeepers to host their brands on a single website, providing an easy and convenient way for customers to browse and purchase products from multiple vendors in one place.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jk872001/fashion-fusion-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jk872001/fashion-fusion-backend/issues"
+  },
+  "homepage": "https://github.com/jk872001/fashion-fusion-backend#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^6.9.0"
+  }
+}

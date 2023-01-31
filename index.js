@@ -1,22 +1,22 @@
 const express=require("express");
 const dotenv=require("dotenv").config()
-const app=express();
+
 const PORT=process.env.PORT || 4000
 const dbConnect=require("./configs/dbConnect");
+
+var bodyParser = require('body-parser')
+var app = express()
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
 dbConnect();
 
-app.get("/",(req,res)=>
-{
-    res.send("Hello its me");
-})
+const authRouter=require("./routes/authRoute")
 
-app.get("/user",(req,res)=>
-{
-    res.json({
-        name:"jitesh"
-    });
-})
-
+app.use("/api/v1",authRouter)
 
 app.listen(PORT,()=>
 {

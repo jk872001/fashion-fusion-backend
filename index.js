@@ -5,14 +5,14 @@ const PORT=process.env.PORT || 4000
 const dbConnect=require("./configs/dbConnect");
 dbConnect();
 
-app.use("/",(req,res)=>
+app.get("/",(req,res)=>
 {
     res.send("Hello its me");
 })
 
-app.use("/user",(req,res)=>
+app.get("/user",(req,res)=>
 {
-    res.send({
+    res.json({
         name:"jitesh"
     });
 })

@@ -9,6 +9,15 @@ app.use("/",(req,res)=>
 {
     res.send("Hello its me");
 })
+
+app.use("/user",(req,res)=>
+{
+    res.send({
+        name:"jitesh"
+    });
+})
+
+
 app.listen(PORT,()=>
 {
     console.log(`Server is running at PORT ${PORT}`);

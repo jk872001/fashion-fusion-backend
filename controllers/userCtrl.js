@@ -32,10 +32,14 @@ const User=require("../models/userModel");
    }
  
    const isPasswordCorrect = await user.isValidatedPassword(password);
+   const token = await user.getToken();
  
    if (isPasswordCorrect) {
       res.status(200).json({
-         msg:"Login Successfully"
+        firstName:user?.firstName,
+        lastName:user?.lastName,
+        email:email,
+        token:token
       })
    }
    else{

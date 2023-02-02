@@ -1,6 +1,6 @@
 const express=require("express");
 const dotenv=require("dotenv").config()
-
+const mongoose=require("mongoose");
 const PORT=process.env.PORT || 4000
 const dbConnect=require("./configs/dbConnect");
 
@@ -12,7 +12,13 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 // parse application/json
 app.use(bodyParser.json())
-dbConnect();
+mongoose.connect(
+    process.env.MONGO_URL,
+    { useNewUrlParser: true, useUnifiedTopology: true,  },
+    () => {
+      console.log('Connected to MongoDB');
+    }
+  );
 
 const authRouter=require("./routes/authRoute")
 

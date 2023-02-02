@@ -4,7 +4,7 @@ const mongoose=require("mongoose");
  const dbConnect=()=>
 {
     try{
-        const conn=mongoose.connect(process.env.MONGO_URL,{
+        const conn=mongoose.connect("mongodb+srv://jitesh123:jitesh123@cluster0.xemvdr7.mongodb.net/?retryWrites=true&w=majority",{
             useNewUrlParser:true,
             useUnifiedTopology:true
         });

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose'); // Erase if already required
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema({
@@ -42,6 +43,13 @@ userSchema.methods.isValidatedPassword = async function (userSendPassword) {
     return await bcrypt.compare(userSendPassword, this.password);
   };
 
+// jwt token generation
+userSchema.methods.getToken =   function () {
+  return  jwt.sign({ id: this._id }, 
+    'secret', {
+    expiresIn: process.env.JWT_EXPIRES,
+  });
+};
 
 //Export the model
 module.exports = mongoose.model('User', userSchema);

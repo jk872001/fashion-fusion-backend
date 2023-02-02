@@ -36,6 +36,12 @@ userSchema.pre("save", async function (next) {
     next();
   });
 
+//   matching the password
+userSchema.methods.isValidatedPassword = async function (userSendPassword) {
+    // console.log(userSendPassword,this.password)
+    return await bcrypt.compare(userSendPassword, this.password);
+  };
+
 
 //Export the model
 module.exports = mongoose.model('User', userSchema);

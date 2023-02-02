@@ -46,4 +46,11 @@ const User=require("../models/userModel");
       return next(new Error("User not existsss"));
    }
 }
-module.exports={createUser,loginUser}
+
+const getAllUsers=async (req,res,next)=>
+{
+   const users=await User.find();
+   res.status(200).send(users)
+
+}
+module.exports={createUser,loginUser,getAllUsers}

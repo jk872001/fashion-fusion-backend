@@ -53,4 +53,33 @@ const getAllUsers=async (req,res,next)=>
    res.status(200).send(users)
 
 }
-module.exports={createUser,loginUser,getAllUsers}
+
+const getSingleUser=async (req,res,next)=>
+{
+   const {id}=req.params;
+   const user=await User.findById(id);
+   if(user)
+   {
+      res.status(200).send(user)
+   }
+   else{
+      return next(new Error("User not existsss"));
+   }
+   
+
+}
+const deleteUser=async (req,res,next)=>
+{
+   const {id}=req.params;
+   const user=await User.findByIdAndDelete(id);
+
+   if(user)
+   {
+      res.status(200).send(user)
+   }
+   else{
+      return next(new Error("User not existsss"));
+   }
+
+}
+module.exports={createUser,loginUser,getAllUsers,getSingleUser,deleteUser}

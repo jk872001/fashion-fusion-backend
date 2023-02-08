@@ -19,13 +19,13 @@ app.use(cookieParser());
 app.use(fileUpload());
 
 // routes
-
+const auth = require("./routes/authRoute");
 
 
 
 
 // routes app.use
-
+app.use("/api/v1", auth);
 
 // Database connection 
 connectDatabase();

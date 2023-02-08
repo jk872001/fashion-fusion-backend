@@ -1,22 +1,43 @@
-const User=require("../models/userModel");
+const User = require("../models/userModel");
+const ErrorHandle = require("../utils/errorHandle");
+const bigPromise = require("../middlewares/bigPromise");
+const crypto = require("crypto");
+const cloudinary = require("cloudinary");
 
-  const createUser= async (req,res,next)=>
-{
-   //  console.log(req.body);
-    const email=req.body.email;
-   const findUser= await User.findOne({email});
-   if(!findUser)
-   {
-      const userCreate= await User.create(req.body);
-      res.status(200).send(userCreate);
-   }
-   else{
-       res.json({
-          msg:"User Already Exists",
-          success:false
-       })
-   }
+const sendToken = require("../utils/sendToken");
+const sendEmail = require("../utils/sendEmail");
+
+// Register a user   => /api/v1/register
+const createUser = bigPromise(async (req, res, next) => {
+    // const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+    //     folder: "shopx/avatar",
+    //     width: 150,
+    //     crop: "scale",
+    // });
+
+    const { name, email, password } = req.body;
+// Checks if email and password is entered by user
+if (!email || !password || !name) {
+    return next(new ErrorHandler("Please Fill All the Fields", 400));
 }
+    const isEmail=await User.findOne({email});
+    if(isEmail)
+    {
+        return next(new ErrorHandler("Email Already Exists", 400));
+    }
+    const user = await User.create({
+        name,
+        email,
+        password,
+        // avatar: {
+        //     public_id: result.public_id,
+        //     url: result.secure_url,
+        // },
+    });
+
+    sendToken(user, 200, res);
+});
+
   const loginUser= async (req,res,next)=>
 {
    const { email, password } = req.body;

@@ -1,30 +1,39 @@
-const express=require("express");
-const dotenv=require("dotenv").config()
-const mongoose=require("mongoose");
-const PORT=process.env.PORT || 4000
-const dbConnect=require("./configs/dbConnect");
+const express = require("express");
+const dotenv = require("dotenv").config();
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const fileUpload = require("express-fileupload");
+const connectDatabase = require("./configs/dbConnect");
+const cloudinary = require("cloudinary");
+const PORT = process.env.PORT || 4000;
+const path = require("path");
+// const errorMiddleware = require("./middleware/error");
+const  cors = require('cors')
+const app = express();
 
-var bodyParser = require('body-parser')
-var app = express()
 
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(express.json());
+app.use(cors())
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(fileUpload());
 
-// parse application/json
-app.use(bodyParser.json())
-mongoose.connect(
-    process.env.MONGO_URL,
-    { useNewUrlParser: true, useUnifiedTopology: true,  },
-    () => {
-      console.log('Connected to MongoDB');
-    }
-  );
+// routes
 
-const authRouter=require("./routes/authRoute")
 
-app.use("/api/v1",authRouter)
 
-app.listen(PORT,()=>
-{
-    console.log(`Server is running at PORT ${PORT}`);
-})  
+
+
+// routes app.use
+
+
+// Database connection 
+connectDatabase();
+
+app.use("/", (req, res) => {
+    res.send("App is running.");
+});
+
+app.listen(PORT, () => {
+    console.log("Server is running on port", PORT);
+});

@@ -36,8 +36,8 @@ const User=require("../models/userModel");
  
    if (isPasswordCorrect) {
       res.status(200).json({
-        firstName:user?.firstName,
-        lastName:user?.lastName,
+        name:user?.name,
+       
         email:email,
         token:token
       })
@@ -82,4 +82,29 @@ const deleteUser=async (req,res,next)=>
    }
 
 }
-module.exports={createUser,loginUser,getAllUsers,getSingleUser,deleteUser}
+const updateUser=async (req,res,next)=>
+{
+   const {id}=req.params;
+   const {email,firstName,lastName,mobile} = req.body;
+   const user=await User.findByIdAndUpdate(id,{
+      firstName:firstName,
+        lastName:lastName,
+        mobile:mobile,
+        email:email,
+        });
+
+   if(user)
+   {
+      res.status(200).send({
+         firstName:firstName,
+         lastName:lastName,
+         mobile:mobile,
+         email:email,
+      })
+   }
+   else{
+      return next(new Error("User not existsss"));
+   }
+
+}
+module.exports={createUser,loginUser,getAllUsers,getSingleUser,deleteUser,updateUser}

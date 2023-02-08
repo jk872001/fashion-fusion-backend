@@ -3,20 +3,18 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema({
-    firstName: {
+    name: {
         type: String,
         required: [true, "Please provide the name"],
         maxLength: [40, "Please privide valid name"],
       },
-    lastName:{
-        type:String,
-        maxLength: [40, "Please privide valid name"],
-       },
+   
     email: {
         type: String,
         required: [true, "Please provide the email"],
         unique: true,
       },
+    
       password: {
         type: String,
         required: [true, "Please provide the password"],

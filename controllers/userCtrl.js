@@ -9,64 +9,65 @@ const sendEmail = require("../utils/sendEmail");
 
 // Register a user   => /api/v1/register
 const createUser = bigPromise(async (req, res, next) => {
-    // const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
-    //     folder: "shopx/avatar",
-    //     width: 150,
-    //     crop: "scale",
-    // });
 
+   // if(req.body.avatar)
+   // {
+   //    const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+   //       folder: "fashion-fusion-backend/avatar",
+   //       width: 150,
+   //       crop: "scale",
+   //   });
+   // }
+    
+   //   console.log("result",result)
     const { name, email, password } = req.body;
 // Checks if email and password is entered by user
 if (!email || !password || !name) {
-    return next(new ErrorHandler("Please Fill All the Fields", 400));
+    return next(new ErrorHandle("Please Fill All the Fields", 400));
 }
     const isEmail=await User.findOne({email});
     if(isEmail)
     {
-        return next(new ErrorHandler("Email Already Exists", 400));
+        return next(new ErrorHandle("Email Already Exists", 400));
     }
     const user = await User.create({
         name,
         email,
         password,
-        // avatar: {
-        //     public_id: result.public_id,
-        //     url: result.secure_url,
-        // },
+        avatar: {
+            public_id: 1,
+            url: "https://lh3.googleusercontent.com/ogw/AAEL6shiS4iiAVqKdrV4FhEYxgPWvGzop8C9iAWWooVruw=s64-c-mo",
+        },
     });
 
     sendToken(user, 200, res);
 });
 
-  const loginUser= async (req,res,next)=>
-{
+ // Login User  =>  /api/v1/login
+const loginUser = bigPromise(async (req, res, next) => {
    const { email, password } = req.body;
 
-   if (!(email || password)) {
-     return next(new Error("Please fill all the fields"));
+   // Checks if email and password is entered by user
+   if (!email || !password) {
+       return next(new ErrorHandle("Please enter email & password", 400));
    }
- 
-   const user = await User.findOne({ email });
- 
+
+   // Finding user in database
+   const user = await User.findOne({ email }).select("+password");
+
    if (!user) {
-     return next(new Error("User not exist"));
+       return next(new ErrorHandle("Invalid Email or Password", 401));
    }
- 
-   const isPasswordCorrect = await user.isValidatedPassword(password);
-   const token = await user.getToken();
- 
-   if (isPasswordCorrect) {
-      res.status(200).json({
-        name:user?.name,
-       
-        email:email,
-        token:token
-      })
+
+   // Checks if password is correct or not
+   const isPasswordMatched = await user.comparePassword(password);
+
+   if (!isPasswordMatched) {
+       return next(new ErrorHandle("Invalid Email or Password", 401));
    }
-   else{
-      return next(new Error("User not existsss"));
-   }
-}
+
+   sendToken(user, 200, res);
+});
 
 const getAllUsers=async (req,res,next)=>
 {

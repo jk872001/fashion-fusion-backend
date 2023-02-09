@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
       },
       url: {
           type: String,
-          required: true,
+          required: false,
       },
   },
     role: {
@@ -90,6 +90,11 @@ userSchema.methods.getResetPasswordToken = function () {
     this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
 
     return resetToken;
+};
+
+// Compare user password
+userSchema.methods.comparePassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
 };
 
 module.exports = mongoose.model("User", userSchema);

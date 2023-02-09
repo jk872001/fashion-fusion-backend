@@ -151,51 +151,16 @@ const getAllUsers = async (req, res, next) => {
 
 }
 
-const getSingleUser = async (req, res, next) => {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    if (user) {
-        res.status(200).send(user)
-    }
-    else {
-        return next(new Error("User not existsss"));
-    }
+// Get currently logged in user details   =>   /api/v1/me
+const getUserById = bigPromise(async (req, res, next) => {
+    const user = await User.findById(req.body.id);
 
-
-}
-const deleteUser = async (req, res, next) => {
-    const { id } = req.params;
-    const user = await User.findByIdAndDelete(id);
-
-    if (user) {
-        res.status(200).send(user)
-    }
-    else {
-        return next(new Error("User not existsss"));
-    }
-
-}
-const updateUser = async (req, res, next) => {
-    const { id } = req.params;
-    const { email, firstName, lastName, mobile } = req.body;
-    const user = await User.findByIdAndUpdate(id, {
-        firstName: firstName,
-        lastName: lastName,
-        mobile: mobile,
-        email: email,
+    res.status(200).json({
+        success: true,
+        user,
     });
+});
 
-    if (user) {
-        res.status(200).send({
-            firstName: firstName,
-            lastName: lastName,
-            mobile: mobile,
-            email: email,
-        })
-    }
-    else {
-        return next(new Error("User not existsss"));
-    }
 
-}
-module.exports = { createUser, loginUser, forgotPassword, resetPassword, getAllUsers, getSingleUser, deleteUser, updateUser }
+
+module.exports = { createUser, loginUser, forgotPassword, resetPassword,getUserById}

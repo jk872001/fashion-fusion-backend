@@ -161,13 +161,14 @@ const getUserById = bigPromise(async (req, res, next) => {
     });
 });
 
-const     updatePassword = bigPromise(async (req, res, next) => {
+// Update / Change password   =>  /api/v1/password/update
+const updatePassword = bigPromise(async (req, res, next) => {
     const user = await User.findById(req.user.id).select("+password");
 
     // Check previous user password
     const isMatched = await user.comparePassword(req.body.oldPassword);
     if (!isMatched) {
-        return next(new ErrorHandler("Old password is incorrect"));
+        return next(new ErrorHandle("Old password is incorrect"));
     }
 
     user.password = req.body.password;
@@ -176,4 +177,4 @@ const     updatePassword = bigPromise(async (req, res, next) => {
     sendToken(user, 200, res);
 });
 
-module.exports = { createUser, loginUser, forgotPassword, resetPassword,getUserById}
+module.exports = { createUser, loginUser, forgotPassword, resetPassword,getUserById,updatePassword}

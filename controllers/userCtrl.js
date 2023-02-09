@@ -10,123 +10,192 @@ const sendEmail = require("../utils/sendEmail");
 // Register a user   => /api/v1/register
 const createUser = bigPromise(async (req, res, next) => {
 
-   // if(req.body.avatar)
-   // {
-   //    const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
-   //       folder: "fashion-fusion-backend/avatar",
-   //       width: 150,
-   //       crop: "scale",
-   //   });
-   // }
-    
-   //   console.log("result",result)
+
+    //    const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+    //       folder: "fashion-fusion-backend/avatar",
+    //       width: 150,
+    //       crop: "scale",
+    //   });
+
+
+    //   console.log("result",result)
     const { name, email, password } = req.body;
-// Checks if email and password is entered by user
-if (!email || !password || !name) {
-    return next(new ErrorHandle("Please Fill All the Fields", 400));
-}
-    const isEmail=await User.findOne({email});
-    if(isEmail)
-    {
+    // Checks if email and password is entered by user
+    if (!email || !password || !name) {
+        return next(new ErrorHandle("Please Fill All the Fields", 400));
+    }
+    const isEmail = await User.findOne({ email });
+    if (isEmail) {
         return next(new ErrorHandle("Email Already Exists", 400));
     }
     const user = await User.create({
         name,
         email,
         password,
-        avatar: {
-            public_id: 1,
-            url: "https://lh3.googleusercontent.com/ogw/AAEL6shiS4iiAVqKdrV4FhEYxgPWvGzop8C9iAWWooVruw=s64-c-mo",
-        },
+        //   avatar: {
+        //       public_id: result.public_id,
+        //       url: result.secure_url,
+        //   },
     });
 
     sendToken(user, 200, res);
 });
 
- // Login User  =>  /api/v1/login
+// Login User  =>  /api/v1/login
 const loginUser = bigPromise(async (req, res, next) => {
-   const { email, password } = req.body;
+    const { email, password } = req.body;
 
-   // Checks if email and password is entered by user
-   if (!email || !password) {
-       return next(new ErrorHandle("Please enter email & password", 400));
-   }
+    // Checks if email and password is entered by user
+    if (!email || !password) {
+        return next(new ErrorHandle("Please enter email & password", 400));
+    }
 
-   // Finding user in database
-   const user = await User.findOne({ email }).select("+password");
+    // Finding user in database
+    const user = await User.findOne({ email }).select("+password");
 
-   if (!user) {
-       return next(new ErrorHandle("Invalid Email or Password", 401));
-   }
+    if (!user) {
+        return next(new ErrorHandle("Invalid Email or Password", 401));
+    }
 
-   // Checks if password is correct or not
-   const isPasswordMatched = await user.comparePassword(password);
+    // Checks if password is correct or not
+    const isPasswordMatched = await user.comparePassword(password);
 
-   if (!isPasswordMatched) {
-       return next(new ErrorHandle("Invalid Email or Password", 401));
-   }
+    if (!isPasswordMatched) {
+        return next(new ErrorHandle("Invalid Email or Password", 401));
+    }
 
-   sendToken(user, 200, res);
+    sendToken(user, 200, res);
 });
 
-const getAllUsers=async (req,res,next)=>
-{
-   const users=await User.find();
-   res.status(200).send(users)
+// Forgot Password   =>  /api/v1/password/forgot
+const forgotPassword = bigPromise(async (req, res, next) => {
+    const user = await User.findOne({ email: req.body.email });
 
-}
+    if (!user) {
+        return next(new ErrorHandle("User not found with this email", 404));
+    }
 
-const getSingleUser=async (req,res,next)=>
-{
-   const {id}=req.params;
-   const user=await User.findById(id);
-   if(user)
-   {
-      res.status(200).send(user)
-   }
-   else{
-      return next(new Error("User not existsss"));
-   }
-   
+    // Get reset token
+    const resetToken = user.getResetPasswordToken();
 
-}
-const deleteUser=async (req,res,next)=>
-{
-   const {id}=req.params;
-   const user=await User.findByIdAndDelete(id);
+    await user.save({ validateBeforeSave: false });
 
-   if(user)
-   {
-      res.status(200).send(user)
-   }
-   else{
-      return next(new Error("User not existsss"));
-   }
+    // Create reset password url
+    const resetUrl = `${req.protocol}://${req.get(
+        "host"
+    )}/password/reset/${resetToken}`;
 
-}
-const updateUser=async (req,res,next)=>
-{
-   const {id}=req.params;
-   const {email,firstName,lastName,mobile} = req.body;
-   const user=await User.findByIdAndUpdate(id,{
-      firstName:firstName,
-        lastName:lastName,
-        mobile:mobile,
-        email:email,
+    const message = `Your password reset token is as follow:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`;
+
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: "ShopX Password Recovery",
+            message,
         });
 
-   if(user)
-   {
-      res.status(200).send({
-         firstName:firstName,
-         lastName:lastName,
-         mobile:mobile,
-         email:email,
-      })
-   }
-   else{
-      return next(new Error("User not existsss"));
-   }
+        res.status(200).json({
+            success: true,
+            message: `Email sent to: ${user.email}`,
+        });
+    } catch (error) {
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save({ validateBeforeSave: false });
+
+        return next(new ErrorHandle(error.message, 500));
+    }
+});
+
+// Reset Password   =>  /api/v1/password/reset/:token
+const resetPassword = bigPromise(async (req, res, next) => {
+    // Hash URL token
+    const resetPasswordToken = crypto
+        .createHash("sha256")
+        .update(req.params.token)
+        .digest("hex");
+
+    const user = await User.findOne({
+        resetPasswordToken,
+        resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        return next(
+            new ErrorHandle(
+                "Password reset token is invalid or has been expired",
+                400
+            )
+        );
+    }
+
+    if (req.body.password !== req.body.confirmPassword) {
+        return next(new ErrorHandle("Password does not match", 400));
+    }
+
+    // Setup new password
+    user.password = req.body.password;
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    sendToken(user, 200, res);
+});
+
+const getAllUsers = async (req, res, next) => {
+    const users = await User.find();
+    res.status(200).send(users)
 
 }
-module.exports={createUser,loginUser,getAllUsers,getSingleUser,deleteUser,updateUser}
+
+const getSingleUser = async (req, res, next) => {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (user) {
+        res.status(200).send(user)
+    }
+    else {
+        return next(new Error("User not existsss"));
+    }
+
+
+}
+const deleteUser = async (req, res, next) => {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+
+    if (user) {
+        res.status(200).send(user)
+    }
+    else {
+        return next(new Error("User not existsss"));
+    }
+
+}
+const updateUser = async (req, res, next) => {
+    const { id } = req.params;
+    const { email, firstName, lastName, mobile } = req.body;
+    const user = await User.findByIdAndUpdate(id, {
+        firstName: firstName,
+        lastName: lastName,
+        mobile: mobile,
+        email: email,
+    });
+
+    if (user) {
+        res.status(200).send({
+            firstName: firstName,
+            lastName: lastName,
+            mobile: mobile,
+            email: email,
+        })
+    }
+    else {
+        return next(new Error("User not existsss"));
+    }
+
+}
+module.exports = { createUser, loginUser, forgotPassword, resetPassword, getAllUsers, getSingleUser, deleteUser, updateUser }

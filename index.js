@@ -20,12 +20,13 @@ app.use(fileUpload());
 
 // routes
 const auth = require("./routes/authRoute");
-
+const products = require("./routes/productRoute");
 
 
 
 // routes app.use
 app.use("/api/v1", auth);
+app.use("/api/v1", products);
 
 // Database connection 
 connectDatabase();
@@ -38,9 +39,9 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-app.use("/", (req, res) => {
-    res.send("App is running.");
-});
+// app.use("/", (req, res) => {
+//     res.send("App is running.");
+// });
 
 app.listen(PORT, () => {
     console.log("Server is running on port", PORT);
